@@ -2,6 +2,7 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
+#include <map>
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -25,6 +26,7 @@ private slots:
     void on_clearButton_clicked();
 
 private:
+    std::map<QString, QString> compression;
     void AppendDataIntoTable(const QStringList &list);
     const int messageTimeout = 5000;
     QStringList fileNames;

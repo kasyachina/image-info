@@ -4,7 +4,6 @@
 #include <QFileDialog>
 #include <QFileInfo>
 #include <QDebug>
-//#include <exiv2/exiv2.hpp>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -23,6 +22,12 @@ MainWindow::MainWindow(QWidget *parent)
     statusBar()->showMessage("Ничего не выбрано");
     setWindowTitle("Характеристики изображений");
     dirFilter << "*.jpg" << "*.gif" << "*.tif" << "*.bmp" << "*.png" << "*.pcx";
+    compression["bmp"] = "без сжатия";
+    compression["gif"] = "LZW сжатие";
+    compression["png"] = "Deflate сжатие";
+    compression["jpg"] = "JPEG сжатие";
+    compression["tiff"] = "ZIP/LZW/JPEG сжатие";
+    compression["pcx"] = "RLE сжатие";
 }
 
 MainWindow::~MainWindow()
@@ -73,14 +78,6 @@ void MainWindow::AppendDataIntoTable(const QStringList &list)
     ui -> dataHolder -> setRowCount(pos + list.size());
     for (int i = 0; i < list.size(); ++i)
     {
-        //Exiv2::Image::AutoPtr image = Exiv2::ImageFactory::open("");
-        /*image->readMetadata();
-        Exiv2::ExifData &exifData = image->exifData();
-        /Exiv2::ExifData::const_iterator end = exifData.end();
-        for (Exiv2::ExifData::const_iterator it = exifData.begin(); it != end; ++it)
-        {
-            std::cout << it->key() << ' ' << it -> value() << "\n";
-        }*/
         QImage image(list[i]);
         if (!image.isNull())
         {
@@ -88,9 +85,9 @@ void MainWindow::AppendDataIntoTable(const QStringList &list)
             lastDir = info.absolutePath();
             ui -> dataHolder -> setItem(pos + i, 0, new QTableWidgetItem(info.fileName()));
             ui -> dataHolder -> setItem(pos + i, 1, new QTableWidgetItem(QString::number(image.size().width()) + " X " + QString::number(image.size().height())));
-            //qDebug() << image.dotsPerMeterX() << ' ' << image.dotsPerMeterY();
             ui -> dataHolder -> setItem(pos + i, 2, new QTableWidgetItem(QString::number(static_cast<int>(std::min(image.dotsPerMeterX(), image.dotsPerMeterY()) / 39.37))));
             ui -> dataHolder -> setItem(pos + i, 3, new QTableWidgetItem(QString::number(image.depth())));
+            ui -> dataHolder -> setItem(pos + i, 4, new QTableWidgetItem(compression[info.suffix()]));
         }
     }
 }
