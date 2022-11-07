@@ -22,7 +22,7 @@ private slots:
 
     void on_selectMultipleFilesButton_clicked();
 
-    void on_selectArchiveButton_clicked();
+    void on_clearButton_clicked();
 
 private:
     void PutDataIntoTable(const QStringList &list);

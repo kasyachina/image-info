@@ -37,7 +37,7 @@
      </rect>
     </property>
     <property name="text">
-     <string>Выбрать файл</string>
+     <string>Добавить файл</string>
     </property>
    </widget>
    <widget class="QPushButton" name="selectMultipleFilesButton">
@@ -50,10 +50,10 @@
      </rect>
     </property>
     <property name="text">
-     <string>Выбрать файлы</string>
+     <string>Добавить файлы</string>
     </property>
    </widget>
-   <widget class="QPushButton" name="selectArchiveButton">
+   <widget class="QPushButton" name="clearButton">
     <property name="geometry">
      <rect>
       <x>550</x>
@@ -63,7 +63,7 @@
      </rect>
     </property>
     <property name="text">
-     <string>Выбрать архив</string>
+     <string>Очистить</string>
     </property>
    </widget>
    <widget class="QTableWidget" name="dataHolder">
@@ -74,6 +74,12 @@
       <width>256</width>
       <height>192</height>
      </rect>
+    </property>
+    <property name="editTriggers">
+     <set>QAbstractItemView::NoEditTriggers</set>
+    </property>
+    <property name="sortingEnabled">
+     <bool>true</bool>
     </property>
    </widget>
   </widget>

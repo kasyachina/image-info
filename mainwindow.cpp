@@ -15,12 +15,13 @@ MainWindow::MainWindow(QWidget *parent)
     g -> addWidget(ui -> selectSingleFileButton, 0, 0, 1, 1);
     g -> addWidget(ui -> selectMultipleFilesButton, 0, 1, 1, 1);
     g -> addWidget(ui -> selectFolderButton, 0, 2, 1, 1);
-    g -> addWidget(ui -> selectArchiveButton, 0, 3, 1, 1);
+    g -> addWidget(ui -> clearButton, 0, 3, 1, 1);
     g -> addWidget(ui -> dataHolder, 1, 0, 4, 4);
     ui -> dataHolder -> setColumnCount(5);
     ui -> dataHolder -> setHorizontalHeaderLabels({"имя", "размер", "разрешение", "глубина цвета", "сжатие"});
     ui -> dataHolder -> horizontalHeader() -> setSectionResizeMode(QHeaderView::Stretch);
     statusBar()->showMessage("Ничего не выбрано");
+    setWindowTitle("Характеристики изображений");
 }
 
 MainWindow::~MainWindow()
@@ -45,17 +46,17 @@ void MainWindow::on_selectSingleFileButton_clicked()
     if (!fileName.isNull())
     {
         //handle files
-        statusBar()->showMessage("ВЫбран 1 файл");
+        statusBar()->showMessage("Добавлен 1 файл");
     }
 }
 
 void MainWindow::on_selectMultipleFilesButton_clicked()
 {
-    fileNames = QFileDialog::getOpenFileNames(this, "Выбрать изображение", "/", "Выбрать изображения (*.jpg *.gif *.tif *.bmp *.png *.pcx)");
+    fileNames = QFileDialog::getOpenFileNames(this, "Выбрать изображения", "/", "Выбрать изображения (*.jpg *.gif *.tif *.bmp *.png *.pcx)");
     if (!fileNames.isEmpty())
     {
          PutDataIntoTable(fileNames);
-         statusBar()->showMessage("Выбрано " + QString::number(fileNames.size()) + " файлов");
+         statusBar()->showMessage("Добавлено " + QString::number(fileNames.size()) + " файлов");
     }
 }
 void MainWindow::PutDataIntoTable(const QStringList &list)
@@ -73,15 +74,15 @@ void MainWindow::PutDataIntoTable(const QStringList &list)
             std::cout << it->key() << ' ' << it -> value() << "\n";
         }*/
         QFileInfo info(list[i]);
+        QImage image(list[i]);
         ui -> dataHolder -> setItem(i, 0, new QTableWidgetItem(info.fileName()));
-        /*ui -> dataHolder -> setItem(i, 1, new QTableWidgetItem(QString::number(image.size().width()) + " X " + QString::number(image.size().height())));
+        ui -> dataHolder -> setItem(i, 1, new QTableWidgetItem(QString::number(image.size().width()) + " X " + QString::number(image.size().height())));
         qDebug() << image.dotsPerMeterX() << ' ' << image.dotsPerMeterY();
         ui -> dataHolder -> setItem(i, 2, new QTableWidgetItem(QString::number(static_cast<int>(std::min(image.dotsPerMeterX(), image.dotsPerMeterY()) / 39.37))));
         ui -> dataHolder -> setItem(i, 3, new QTableWidgetItem(QString::number(image.depth())));
-    */
     }
 }
-void MainWindow::on_selectArchiveButton_clicked()
+void MainWindow::on_clearButton_clicked()
 {
 
 }
