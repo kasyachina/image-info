@@ -25,11 +25,13 @@ private slots:
 
     void on_clearButton_clicked();
 
+    void tableItemClicked(int row, int column);
+
 private:
     std::map<QString, QString> compression;
     void AppendDataIntoTable(const QStringList &list);
     const int messageTimeout = 5000;
-    QStringList fileNames;
+    std::map<QString, QString> fileNames;
     QString lastDir = "/";
     Ui::MainWindow *ui;
     QStringList dirFilter;

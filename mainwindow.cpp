@@ -4,6 +4,8 @@
 #include <QFileDialog>
 #include <QFileInfo>
 #include <QDebug>
+#include <QDialog>
+#include <QLabel>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -28,8 +30,24 @@ MainWindow::MainWindow(QWidget *parent)
     compression["jpg"] = "JPEG сжатие";
     compression["tiff"] = "ZIP/LZW/JPEG сжатие";
     compression["pcx"] = "RLE сжатие";
+    connect(ui -> dataHolder, SIGNAL(cellDoubleClicked(int,int)), this, SLOT(tableItemClicked(int,int)));
 }
 
+void MainWindow::tableItemClicked(int row, int column)
+{
+    for (int i = 0; i < ui->dataHolder->columnCount(); ++i)
+    {
+        ui->dataHolder-> item(row, i) -> setSelected(false);
+    }
+    QDialog *d = new QDialog(this);
+    QHBoxLayout diagLayout(d);
+    QPixmap px(fileNames[ui->dataHolder-> item(row, 0) -> text()]);
+    QLabel label;
+    label.setPixmap(px);
+    diagLayout.addWidget(&label);
+    d->exec();
+
+}
 MainWindow::~MainWindow()
 {
     delete ui;
@@ -73,7 +91,6 @@ void MainWindow::on_selectMultipleFilesButton_clicked()
 }
 void MainWindow::AppendDataIntoTable(const QStringList &list)
 {
-    fileNames.append(list);
     int pos = ui -> dataHolder -> rowCount();
     ui -> dataHolder -> setRowCount(pos + list.size());
     for (int i = 0; i < list.size(); ++i)
@@ -82,6 +99,7 @@ void MainWindow::AppendDataIntoTable(const QStringList &list)
         if (!image.isNull())
         {
             QFileInfo info(list[i]);
+            fileNames[info.fileName()] = list[i];
             lastDir = info.absolutePath();
             ui -> dataHolder -> setItem(pos + i, 0, new QTableWidgetItem(info.fileName()));
             ui -> dataHolder -> setItem(pos + i, 1, new QTableWidgetItem(QString::number(image.size().width()) + " X " + QString::number(image.size().height())));
@@ -101,6 +119,7 @@ void MainWindow::on_clearButton_clicked()
             statusBar() -> showMessage("Удалено " + QString::number(ui -> dataHolder -> rowCount()) + " файлов", messageTimeout);
             ui -> dataHolder -> clearContents();
             ui -> dataHolder -> setRowCount(0);
+            fileNames.clear();
         }
         else
         {
