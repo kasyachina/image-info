@@ -30,5 +30,6 @@ private:
     QStringList fileNames;
     QString lastDir = "/";
     Ui::MainWindow *ui;
+    QStringList dirFilter;
 };
 #endif // MAINWINDOW_H

@@ -22,6 +22,7 @@ MainWindow::MainWindow(QWidget *parent)
     ui -> dataHolder -> horizontalHeader() -> setSectionResizeMode(QHeaderView::Stretch);
     statusBar()->showMessage("Ничего не выбрано");
     setWindowTitle("Характеристики изображений");
+    dirFilter << "*.jpg" << "*.gif" << "*.tif" << "*.bmp" << "*.png" << "*.pcx";
 }
 
 MainWindow::~MainWindow()
@@ -34,6 +35,7 @@ void MainWindow::on_selectFolderButton_clicked()
     QDir newDir(QFileDialog::getExistingDirectory(this, "Выберите папку", lastDir));
     if (!newDir.isEmpty())
     {
+        newDir.setNameFilters(dirFilter);
         QFileInfoList fileList(newDir.entryInfoList(QDir::Filter::Files));
         QStringList filepaths;
         for (const auto& x : fileList)
@@ -79,11 +81,11 @@ void MainWindow::AppendDataIntoTable(const QStringList &list)
         {
             std::cout << it->key() << ' ' << it -> value() << "\n";
         }*/
-        QFileInfo info(list[i]);
-        lastDir = info.absolutePath();
         QImage image(list[i]);
         if (!image.isNull())
         {
+            QFileInfo info(list[i]);
+            lastDir = info.absolutePath();
             ui -> dataHolder -> setItem(pos + i, 0, new QTableWidgetItem(info.fileName()));
             ui -> dataHolder -> setItem(pos + i, 1, new QTableWidgetItem(QString::number(image.size().width()) + " X " + QString::number(image.size().height())));
             //qDebug() << image.dotsPerMeterX() << ' ' << image.dotsPerMeterY();
@@ -107,6 +109,14 @@ void MainWindow::on_clearButton_clicked()
         {
             statusBar() -> showMessage("Нечего удалять", messageTimeout);
         }
+    }
+    else
+    {
+        for (int i = selectedItems.size() / 4 - 1; i >= 0; --i)
+        {
+            ui -> dataHolder -> removeRow(selectedItems[4 * i]->row());
+        }
+        statusBar() -> showMessage("Удалено " + QString::number(selectedItems.size() / 4) + " файлов", messageTimeout);
     }
 }
 
