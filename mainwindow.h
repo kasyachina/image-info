@@ -25,8 +25,9 @@ private slots:
     void on_clearButton_clicked();
 
 private:
-    void PutDataIntoTable(const QStringList &list);
+    void AppendDataIntoTable(const QStringList &list);
     QStringList fileNames;
+    QString lastDir = "/";
     Ui::MainWindow *ui;
 };
 #endif // MAINWINDOW_H

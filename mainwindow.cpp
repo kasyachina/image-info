@@ -31,7 +31,7 @@ MainWindow::~MainWindow()
 
 void MainWindow::on_selectFolderButton_clicked()
 {
-    QString newDir = QFileDialog::getExistingDirectory(this, "Выберите папку");
+    QString newDir = QFileDialog::getExistingDirectory(this, "Выберите папку", lastDir);
     if (!newDir.isEmpty())
     {
         //handle dir
@@ -41,28 +41,28 @@ void MainWindow::on_selectFolderButton_clicked()
 
 void MainWindow::on_selectSingleFileButton_clicked()
 {
-    QString fileName = QFileDialog::getOpenFileName(this, "Выбрать изображение", "/", "Выбрать изображения (*.jpg *.gif *.tif *.bmp *.png *.pcx)");
-    //std::cout << fileName.toStdString() << "\n";
+    QString fileName = QFileDialog::getOpenFileName(this, "Выбрать изображение", lastDir, "Выбрать изображения (*.jpg *.gif *.tif *.bmp *.png *.pcx)");
     if (!fileName.isNull())
     {
-        //handle files
+        AppendDataIntoTable({fileName});
         statusBar()->showMessage("Добавлен 1 файл");
     }
 }
 
 void MainWindow::on_selectMultipleFilesButton_clicked()
 {
-    fileNames = QFileDialog::getOpenFileNames(this, "Выбрать изображения", "/", "Выбрать изображения (*.jpg *.gif *.tif *.bmp *.png *.pcx)");
-    if (!fileNames.isEmpty())
+    QStringList newFileNames = QFileDialog::getOpenFileNames(this, "Выбрать изображения", lastDir, "Выбрать изображения (*.jpg *.gif *.tif *.bmp *.png *.pcx)");
+    if (!newFileNames.isEmpty())
     {
-         PutDataIntoTable(fileNames);
-         statusBar()->showMessage("Добавлено " + QString::number(fileNames.size()) + " файлов");
+         AppendDataIntoTable(newFileNames);
+         statusBar()->showMessage("Добавлено " + QString::number(newFileNames.size()) + " файлов");
     }
 }
-void MainWindow::PutDataIntoTable(const QStringList &list)
+void MainWindow::AppendDataIntoTable(const QStringList &list)
 {
-    ui -> dataHolder -> clearContents();
-    ui -> dataHolder -> setRowCount(list.size());
+    fileNames.append(list);
+    int pos = ui -> dataHolder -> rowCount();
+    ui -> dataHolder -> setRowCount(pos + list.size());
     for (int i = 0; i < list.size(); ++i)
     {
         //Exiv2::Image::AutoPtr image = Exiv2::ImageFactory::open("");
@@ -74,12 +74,13 @@ void MainWindow::PutDataIntoTable(const QStringList &list)
             std::cout << it->key() << ' ' << it -> value() << "\n";
         }*/
         QFileInfo info(list[i]);
+        lastDir = info.absolutePath();
         QImage image(list[i]);
-        ui -> dataHolder -> setItem(i, 0, new QTableWidgetItem(info.fileName()));
-        ui -> dataHolder -> setItem(i, 1, new QTableWidgetItem(QString::number(image.size().width()) + " X " + QString::number(image.size().height())));
-        qDebug() << image.dotsPerMeterX() << ' ' << image.dotsPerMeterY();
-        ui -> dataHolder -> setItem(i, 2, new QTableWidgetItem(QString::number(static_cast<int>(std::min(image.dotsPerMeterX(), image.dotsPerMeterY()) / 39.37))));
-        ui -> dataHolder -> setItem(i, 3, new QTableWidgetItem(QString::number(image.depth())));
+        ui -> dataHolder -> setItem(pos + i, 0, new QTableWidgetItem(info.fileName()));
+        ui -> dataHolder -> setItem(pos + i, 1, new QTableWidgetItem(QString::number(image.size().width()) + " X " + QString::number(image.size().height())));
+        //qDebug() << image.dotsPerMeterX() << ' ' << image.dotsPerMeterY();
+        ui -> dataHolder -> setItem(pos + i, 2, new QTableWidgetItem(QString::number(static_cast<int>(std::min(image.dotsPerMeterX(), image.dotsPerMeterY()) / 39.37))));
+        ui -> dataHolder -> setItem(pos + i, 3, new QTableWidgetItem(QString::number(image.depth())));
     }
 }
 void MainWindow::on_clearButton_clicked()
