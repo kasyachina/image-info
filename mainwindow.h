@@ -26,6 +26,7 @@ private slots:
 
 private:
     void AppendDataIntoTable(const QStringList &list);
+    const int messageTimeout = 5000;
     QStringList fileNames;
     QString lastDir = "/";
     Ui::MainWindow *ui;

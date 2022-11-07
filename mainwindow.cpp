@@ -51,7 +51,7 @@ void MainWindow::on_selectSingleFileButton_clicked()
     if (!fileName.isNull())
     {
         AppendDataIntoTable({fileName});
-        statusBar()->showMessage("Добавлен 1 файл");
+        statusBar()->showMessage("Добавлен 1 файл", messageTimeout);
     }
 }
 
@@ -61,7 +61,7 @@ void MainWindow::on_selectMultipleFilesButton_clicked()
     if (!newFileNames.isEmpty())
     {
          AppendDataIntoTable(newFileNames);
-         statusBar()->showMessage("Добавлено " + QString::number(newFileNames.size()) + " файлов");
+         statusBar()->showMessage("Добавлено " + QString::number(newFileNames.size()) + " файлов", messageTimeout);
     }
 }
 void MainWindow::AppendDataIntoTable(const QStringList &list)
@@ -94,6 +94,19 @@ void MainWindow::AppendDataIntoTable(const QStringList &list)
 }
 void MainWindow::on_clearButton_clicked()
 {
-
+    QList<QTableWidgetItem*> selectedItems = ui -> dataHolder -> selectedItems();
+    if (selectedItems.size() == 0)
+    {
+        if (ui -> dataHolder -> rowCount() != 0)
+        {
+            statusBar() -> showMessage("Удалено " + QString::number(ui -> dataHolder -> rowCount()) + " файлов", messageTimeout);
+            ui -> dataHolder -> clearContents();
+            ui -> dataHolder -> setRowCount(0);
+        }
+        else
+        {
+            statusBar() -> showMessage("Нечего удалять", messageTimeout);
+        }
+    }
 }
 
