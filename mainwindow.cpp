@@ -90,7 +90,7 @@ void MainWindow::on_selectMultipleFilesButton_clicked()
 }
 void MainWindow::AppendDataIntoTable(const QStringList &list, bool isDir)
 {
-
+    ui -> dataHolder -> sortByColumn(-1, Qt::AscendingOrder);
     int cnt = 0;
     for (int i = 0; i < list.size(); ++i)
     {
@@ -114,9 +114,9 @@ void MainWindow::AppendDataIntoTable(const QStringList &list, bool isDir)
         }
     }
     if (isDir)
-        statusBar()->showMessage("Выбрана папка: " + QDir(lastDir).dirName() + ", добавлен(о) " + QString::number(cnt) + " файл(ов), дубликатов: " + QString::number(list.size() - cnt));
+        statusBar()->showMessage("Выбрана папка: " + QDir(lastDir).dirName() + ", добавлен(о) " + QString::number(cnt) + " файл(ов), пропущено дубликатов: " + QString::number(list.size() - cnt));
     else
-        statusBar()->showMessage("Добавлен(о) " + QString::number(cnt) + " файл(ов), дубликатов: " + QString::number(list.size() - cnt), messageTimeout);
+        statusBar()->showMessage("Добавлен(о) " + QString::number(cnt) + " файл(ов), пропущено дубликатов: " + QString::number(list.size() - cnt), messageTimeout);
 }
 void MainWindow::on_clearButton_clicked()
 {
