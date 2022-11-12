@@ -3,6 +3,7 @@
 
 #include <QMainWindow>
 #include <map>
+#include <set>
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -29,9 +30,9 @@ private slots:
 
 private:
     std::map<QString, QString> compression;
-    void AppendDataIntoTable(const QStringList &list);
+    void AppendDataIntoTable(const QStringList &list, bool isDir = false);
     const int messageTimeout = 5000;
-    std::map<QString, QString> fileNames;
+    std::map<QString, std::set<QString>> fileDirs;
     QString lastDir = "/";
     Ui::MainWindow *ui;
     QStringList dirFilter;

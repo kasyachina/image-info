@@ -6,6 +6,7 @@
 #include <QDebug>
 #include <QDialog>
 #include <QLabel>
+#include "customitems.h"
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -41,7 +42,7 @@ void MainWindow::tableItemClicked(int row, int column)
     }
     QDialog *d = new QDialog(this);
     QHBoxLayout diagLayout(d);
-    QPixmap px(fileNames[ui->dataHolder-> item(row, 0) -> text()]);
+    QPixmap px(dynamic_cast<NameItem*>(ui -> dataHolder -> item(row, 0)) -> filePath);
     QLabel label;
     label.setPixmap(px);
     diagLayout.addWidget(&label);
@@ -55,9 +56,10 @@ MainWindow::~MainWindow()
 
 void MainWindow::on_selectFolderButton_clicked()
 {
-    QDir newDir(QFileDialog::getExistingDirectory(this, "Выберите папку", lastDir));
-    if (!newDir.isEmpty())
+    QString newDirPath = QFileDialog::getExistingDirectory(this, "Выберите папку", lastDir);
+    if (!newDirPath.isEmpty())
     {
+        QDir newDir(newDirPath);
         newDir.setNameFilters(dirFilter);
         QFileInfoList fileList(newDir.entryInfoList(QDir::Filter::Files));
         QStringList filepaths;
@@ -65,8 +67,7 @@ void MainWindow::on_selectFolderButton_clicked()
         {
             filepaths.append(x.absoluteFilePath());
         }
-        AppendDataIntoTable(filepaths);
-        statusBar()->showMessage("Выбрана папка: " + newDir.dirName() + ", добавлено " + QString::number(filepaths.size()) + " файлов");
+        AppendDataIntoTable(filepaths, true);
     }
 }
 
@@ -76,7 +77,6 @@ void MainWindow::on_selectSingleFileButton_clicked()
     if (!fileName.isNull())
     {
         AppendDataIntoTable({fileName});
-        statusBar()->showMessage("Добавлен 1 файл", messageTimeout);
     }
 }
 
@@ -86,28 +86,37 @@ void MainWindow::on_selectMultipleFilesButton_clicked()
     if (!newFileNames.isEmpty())
     {
          AppendDataIntoTable(newFileNames);
-         statusBar()->showMessage("Добавлено " + QString::number(newFileNames.size()) + " файлов", messageTimeout);
     }
 }
-void MainWindow::AppendDataIntoTable(const QStringList &list)
+void MainWindow::AppendDataIntoTable(const QStringList &list, bool isDir)
 {
-    int pos = ui -> dataHolder -> rowCount();
-    ui -> dataHolder -> setRowCount(pos + list.size());
+
+    int cnt = 0;
     for (int i = 0; i < list.size(); ++i)
     {
-        QImage image(list[i]);
-        if (!image.isNull())
+        QFileInfo info(list[i]);
+        if (fileDirs[info.absolutePath()].find(info.fileName()) == fileDirs[info.absolutePath()].end())
         {
-            QFileInfo info(list[i]);
-            fileNames[info.fileName()] = list[i];
-            lastDir = info.absolutePath();
-            ui -> dataHolder -> setItem(pos + i, 0, new QTableWidgetItem(info.fileName()));
-            ui -> dataHolder -> setItem(pos + i, 1, new QTableWidgetItem(QString::number(image.size().width()) + " X " + QString::number(image.size().height())));
-            ui -> dataHolder -> setItem(pos + i, 2, new QTableWidgetItem(QString::number(static_cast<int>(std::min(image.dotsPerMeterX(), image.dotsPerMeterY()) / 39.37))));
-            ui -> dataHolder -> setItem(pos + i, 3, new QTableWidgetItem(QString::number(image.depth())));
-            ui -> dataHolder -> setItem(pos + i, 4, new QTableWidgetItem(compression[info.suffix()]));
+            QImage image(list[i]);
+            if (!image.isNull())
+            {
+                lastDir = info.absolutePath();
+                fileDirs[lastDir].insert(info.fileName());
+                ui -> dataHolder -> insertRow(ui -> dataHolder -> rowCount());
+                int pos = ui -> dataHolder -> rowCount() - 1;
+                ui -> dataHolder -> setItem(pos, 0, new NameItem(info.fileName(), list[i]));
+                ui -> dataHolder -> setItem(pos, 1, new SizeItem(QString::number(image.size().width()) + " X " + QString::number(image.size().height()), image.size().width(), image.size().height()));
+                ui -> dataHolder -> setItem(pos, 2, new QTableWidgetItem(QString::number(static_cast<int>(std::min(image.dotsPerMeterX(), image.dotsPerMeterY()) / 39.37))));
+                ui -> dataHolder -> setItem(pos, 3, new QTableWidgetItem(QString::number(image.depth())));
+                ui -> dataHolder -> setItem(pos, 4, new QTableWidgetItem(compression[info.suffix()]));
+            }
+            cnt++;
         }
     }
+    if (isDir)
+        statusBar()->showMessage("Выбрана папка: " + QDir(lastDir).dirName() + ", добавлен(о) " + QString::number(cnt) + " файл(ов), дубликатов: " + QString::number(list.size() - cnt));
+    else
+        statusBar()->showMessage("Добавлен(о) " + QString::number(cnt) + " файл(ов), дубликатов: " + QString::number(list.size() - cnt), messageTimeout);
 }
 void MainWindow::on_clearButton_clicked()
 {
@@ -119,7 +128,7 @@ void MainWindow::on_clearButton_clicked()
             statusBar() -> showMessage("Удалено " + QString::number(ui -> dataHolder -> rowCount()) + " файлов", messageTimeout);
             ui -> dataHolder -> clearContents();
             ui -> dataHolder -> setRowCount(0);
-            fileNames.clear();
+            fileDirs.clear();
         }
         else
         {
@@ -128,11 +137,15 @@ void MainWindow::on_clearButton_clicked()
     }
     else
     {
-        for (int i = selectedItems.size() / 4 - 1; i >= 0; --i)
+        int columns = ui->dataHolder->columnCount();
+        for (int i = selectedItems.size() / columns - 1; i >= 0; --i)
         {
-            ui -> dataHolder -> removeRow(selectedItems[4 * i]->row());
+            int row = selectedItems[columns * i]->row();
+            QFileInfo info(dynamic_cast<NameItem*>(ui -> dataHolder -> item(row, 0)) -> filePath);
+            fileDirs[info.absolutePath()].erase(info.fileName());
+            ui -> dataHolder -> removeRow(row);
         }
-        statusBar() -> showMessage("Удалено " + QString::number(selectedItems.size() / 4) + " файлов", messageTimeout);
+        statusBar() -> showMessage("Удалено " + QString::number(selectedItems.size() / columns) + " файлов", messageTimeout);
     }
 }
 
